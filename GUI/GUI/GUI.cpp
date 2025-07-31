@@ -1,65 +1,81 @@
-#include <windows.h>  
+#include <windows.h>
+#include <iostream>
 
-// Déclaration de la fonction WindowProc  
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)  
-{  
-  switch (uMsg)  
-  {  
-      case WM_DESTROY:  
-          PostQuitMessage(0);  
-          return 0;  
+// Fonction de gestion des événements
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        return 0;
 
-      default:  
-          return DefWindowProc(hwnd, uMsg, wParam, lParam);  
-  }  
-}  
+    case WM_CLOSE:
+        if (MessageBoxW(hwnd, L"QUITTER L'APPLICATION ?", L"APP", MB_OKCANCEL) == IDOK) {
+            DestroyWindow(hwnd);
+        }
+        return 0;
 
-int main()  
-{  
-  // Enregistrement de la classe de fenêtre.  
-  const wchar_t CLASS_NAME[] = L"Sample Window Class";  
+    case WM_LBUTTONDOWN:
+        std::wcout << L"CLIC GAUCHE\n";
+        return 0;
 
-  WNDCLASS wc = {};  
+    case WM_RBUTTONDOWN:
+        std::wcout << L"CLIC DROIT\n";
+        return 0;
 
-  wc.lpfnWndProc = WindowProc;  
-  wc.hInstance = GetModuleHandle(NULL);  
-  wc.lpszClassName = CLASS_NAME;  
+    case WM_SIZE: {
+        int width = LOWORD(lParam);
+        int height = HIWORD(lParam);
+        // À implémenter : ajuster les widgets
+        std::wcout << L"Redimensionnement : " << width << L"x" << height << L"\n";
+        return 0;
+    }
 
-  if (!RegisterClass(&wc))  
-  {  
-      return -1;  
-  }
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
 
-  HINSTANCE hInstance = GetModuleHandle(NULL); // Définition de hInstance
+    default:
+        return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+    }
+}
 
-  HWND hwnd = CreateWindowEx(
-      0,                              // Optional window styles.
-      CLASS_NAME,                     // Window class
-      L"Learn to Program Windows",    // Window text
-      WS_OVERLAPPEDWINDOW,            // Window style
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
+    // Enregistrement de la classe de fenêtre
+    const wchar_t CLASS_NAME[] = L"Sample Window Class";
+    WNDCLASSW wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = CLASS_NAME;
 
-      // Size and position
-      CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+    if (!RegisterClassW(&wc)) {
+        MessageBoxW(nullptr, L"Échec de l'enregistrement de la classe", L"Erreur", MB_OK | MB_ICONERROR);
+        return -1;
+    }
 
-      NULL,       // Parent window    
-      NULL,       // Menu
-      hInstance,  // Instance handle
-      NULL        // Additional application data
-  );
+    // Création de la fenêtre
+    HWND hwnd = CreateWindowExW(
+        0, CLASS_NAME, L"Création d'une GUI", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        nullptr, nullptr, hInstance, nullptr
+    );
 
-  if (hwnd == NULL)
-  {
-      return 0;
-  }
+    if (hwnd == nullptr) {
+        MessageBoxW(nullptr, L"Échec de la création de la fenêtre", L"Erreur", MB_OK | MB_ICONERROR);
+        return -1;
+    }
 
-  ShowWindow(hwnd, SW_SHOW);
+    ShowWindow(hwnd, nCmdShow);
 
-  MSG msg = {};
-  while (GetMessage(&msg, NULL, 0, 0))
-  {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-  }
+    // Boucle principale
+    MSG msg = {};
+    while (GetMessageW(&msg, nullptr, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
 
-  return 0;
+    return 0;
 }
