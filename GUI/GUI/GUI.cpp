@@ -15,7 +15,7 @@
 HMENU hMenu;
 TCHAR szFileName[MAX_PATH] = { 0 }; // Buffer pour le chemin du fichier (MAX_PATH = 260)
 std::wstring textBuffer; // Buffer pour stocker le texte
-const int MAX_TEXT_LENGTH = 10000; // Limite du texte
+const int MAX_TEXT_LENGTH = 4294967296; // Limite du texte
 HBITMAP hBitmap = nullptr; // Handle pour l'image
 
 
@@ -45,12 +45,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         switch (wParam)
         {
         case FILE_MENU_NEW:
+        {
             if (hEdit) {
                 SendMessageW(hEdit, WM_SETTEXT, 0, (LPARAM)L""); // Efface le texte
                 textBuffer.clear();
             }
             MessageBeep(MB_OK);
             break;
+        }
 
         case FILE_MENU_OPEN:
         {
@@ -148,12 +150,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
 
         case FILE_MENU_EXIT:
+        {
             if (MessageBoxW(hwnd, L"Voulez-vous vraiment quitter l'application ?", L"Quitter", MB_OKCANCEL | MB_ICONQUESTION) == IDOK) {
                 DestroyWindow(hwnd);
             }
             break;
         }
         return 0;
+}
     }
 
     case WM_SIZE:
@@ -187,9 +191,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     }
 
     case WM_DESTROY:
+    {
         if (hBitmap) DeleteObject(hBitmap);
         PostQuitMessage(0);
         return 0;
+    }
 
     default:
         return DefWindowProcW(hwnd, uMsg, wParam, lParam);
@@ -227,17 +233,6 @@ void AddMenu(HWND hwnd)
    SetMenu(hwnd, hMenu);  
 }
 
-// Cette fonction peut être utilisée pour ajouter des contrôles supplémentaires à la fenêtre
-// Par exemple, des boutons, des champs de texte, etc.
-//void AddControls(HWND hwnd) 
-//{
-//	//CreateWindowW(L"STATIC", L"Entre le texte ici", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER,
-//	//	50, 50, 200, 20, hwnd, nullptr, nullptr, nullptr); // Exemple de texte statique
-//	CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_LEFT, 50, 80, 200, 20, hwnd, nullptr, nullptr, nullptr); // Exemple de champ de texte
-//
-//	/*CreateWindowW(L"BUTTON", L"Button 1", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-//		10, 10, 100, 30, hwnd, (HMENU)1, nullptr, nullptr);*/ // Exemple de bouton
-//}
 void AddControls(HWND hwnd)
 {
     // Crée un champ de texte multiligne avec défilement
