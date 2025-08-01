@@ -1,9 +1,25 @@
 #include <windows.h>
 #include <iostream>
+#include "Menu.h"
+
+// Déclaration de macros
+
+
+// Déclaration de la variable globale pour le menu
+HMENU hMenu;
+
+void AddMenu(HWND hwnd);
+
+
 
 // Fonction de gestion des événements
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
+
+	case WM_CREATE:
+        AddMenu(hwnd);
+		return 0;
+
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
@@ -42,6 +58,26 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     }
 }
+
+
+void AddMenu(HWND hwnd)
+{
+	hMenu = CreateMenu();
+
+	AppendMenuW(hMenu, MF_STRING, NULL, L"File");
+	AppendMenuW(hMenu, MF_STRING, NULL, L"Edit");
+	AppendMenuW(hMenu, MF_STRING, NULL, L"Window");
+	AppendMenuW(hMenu, MF_STRING, NULL, L"Help");
+
+	SetMenu(hwnd, hMenu);
+}
+
+
+
+
+
+
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     // Enregistrement de la classe de fenêtre
