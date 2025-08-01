@@ -1,6 +1,8 @@
 #include <windows.h>
 #include <iostream>
-#include "Menu.h"
+#include <commdlg.h> // Ajout pour GetOpenFileName
+#include <fstream>
+#include <string>
 
 // Déclaration de macros
 
@@ -11,7 +13,10 @@
 
 // Déclaration de la variable globale pour le menu
 HMENU hMenu;
+TCHAR szFileName[MAX_PATH] = { 0 }; // Buffer pour le chemin du fichier (MAX_PATH = 260)
 
+
+// Déclaration des fonctions
 void AddMenu(HWND hwnd);
 
 
@@ -31,12 +36,75 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case FILE_MENU_NEW:
 			MessageBeep(MB_OK);
 			break;
-		case FILE_MENU_OPEN:
-			MessageBoxW(hwnd, L"Open command selected", L"Info", MB_OK | MB_ICONINFORMATION);
-			break;
-		case FILE_MENU_SAVE:
-			MessageBoxW(hwnd, L"Save command selected", L"Info", MB_OK | MB_ICONINFORMATION);
-			break;
+        case FILE_MENU_OPEN:
+        {
+            OPENFILENAME ofn = { 0 };
+            TCHAR szFileName[MAX_PATH] = { 0 };
+
+            ofn.lStructSize = sizeof(OPENFILENAME);
+            ofn.hwndOwner = hwnd;
+            ofn.lpstrFilter = L"Tous les fichiers (*.*)\0*.*\0Textes (*.txt)\0*.txt\0\0"; // Filtre des types de fichiers
+            ofn.lpstrFile = szFileName;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY; // Options : fichier doit exister, chemin valide
+            ofn.lpstrDefExt = L"txt"; // Extension par défaut
+
+            if (GetOpenFileName(&ofn)) {
+                // Si l'utilisateur a sélectionné un fichier, affiche le chemin
+                MessageBoxW(hwnd, szFileName, L"Fichier sélectionné", MB_OK | MB_ICONINFORMATION);
+                // Ici, tu peux ajouter la logique pour ouvrir le fichier (par exemple, avec un ifstream)
+            }
+            else {
+                // Vérifie si l'utilisateur a annulé ou s'il y a une erreur
+                if (CommDlgExtendedError() == 0) 
+                {
+					MessageBeep(MB_ICONINFORMATION);
+                    MessageBoxW(hwnd, L"Annulé par l'utilisateur", L"Info", MB_OK);
+                }
+                else 
+                {
+					MessageBeep(MB_ICONERROR);
+                    MessageBoxW(hwnd, L"Erreur lors de l'ouverture du dialogue", L"Erreur", MB_OK | MB_ICONERROR);
+                }
+            }
+            break;
+        }
+        case FILE_MENU_SAVE:
+        {
+            OPENFILENAME ofn = { 0 };
+            TCHAR szFileName[MAX_PATH] = { 0 };
+
+            ofn.lStructSize = sizeof(OPENFILENAME);
+            ofn.hwndOwner = hwnd;
+            ofn.lpstrFilter = L"Tous les fichiers (*.*)\0*.*\0Textes (*.txt)\0*.txt\0\0"; // Filtre des types de fichiers
+            ofn.lpstrFile = szFileName;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY; // Demande confirmation si fichier existe
+            ofn.lpstrDefExt = L"txt"; // Extension par défaut
+
+            if (GetSaveFileName(&ofn)) {
+                // Ouvre le fichier en mode écriture
+                std::wofstream file(szFileName, std::ios::out);
+                if (file.is_open()) {
+                    // Écrit un exemple de texte (tu peux modifier ça selon ton besoin)
+                    file << L"Contenu sauvegardé à " << L"02:04 PM CEST, Vendredi 01 Août 2025" << std::endl;
+                    file.close();
+                    MessageBoxW(hwnd, L"Fichier sauvegardé avec succès !", L"Sauvegarde", MB_OK | MB_ICONINFORMATION);
+                }
+                else {
+                    MessageBoxW(hwnd, L"Erreur lors de l'ouverture du fichier", L"Erreur", MB_OK | MB_ICONERROR);
+                }
+            }
+            else {
+                if (CommDlgExtendedError() == 0) {
+                    MessageBoxW(hwnd, L"Annulé par l'utilisateur", L"Info", MB_OK);
+                }
+                else {
+                    MessageBoxW(hwnd, L"Erreur lors de la sauvegarde du dialogue", L"Erreur", MB_OK | MB_ICONERROR);
+                }
+            }
+            break;
+        }
 		case FILE_MENU_EXIT:
 			if (MessageBoxW(hwnd, L"Voulez-vous vraiment quitter l'application ?", L"Quitter", MB_OKCANCEL | MB_ICONQUESTION) == IDOK) {
 				DestroyWindow(hwnd);
@@ -106,11 +174,6 @@ void AddMenu(HWND hwnd)
 
    SetMenu(hwnd, hMenu);  
 }
-
-
-
-
-
 
 
 
