@@ -4,6 +4,10 @@
 
 // Déclaration de macros
 
+#define FILE_MENU_NEW 1
+#define FILE_MENU_OPEN 2
+#define FILE_MENU_SAVE 3
+#define FILE_MENU_EXIT 4
 
 // Déclaration de la variable globale pour le menu
 HMENU hMenu;
@@ -20,15 +24,38 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         AddMenu(hwnd);
 		return 0;
 
+    case WM_COMMAND:
+    {
+        switch (wParam) 
+        {
+        case FILE_MENU_NEW:
+			MessageBeep(MB_OK);
+			break;
+		case FILE_MENU_OPEN:
+			MessageBoxW(hwnd, L"Open command selected", L"Info", MB_OK | MB_ICONINFORMATION);
+			break;
+		case FILE_MENU_SAVE:
+			MessageBoxW(hwnd, L"Save command selected", L"Info", MB_OK | MB_ICONINFORMATION);
+			break;
+		case FILE_MENU_EXIT:
+			if (MessageBoxW(hwnd, L"Voulez-vous vraiment quitter l'application ?", L"Quitter", MB_OKCANCEL | MB_ICONQUESTION) == IDOK) {
+				DestroyWindow(hwnd);
+			}
+			break;
+        }
+
+        return 0;
+    }
+
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
 
-    case WM_CLOSE:
+    /*case WM_CLOSE:
         if (MessageBoxW(hwnd, L"QUITTER L'APPLICATION ?", L"APP", MB_OKCANCEL) == IDOK) {
             DestroyWindow(hwnd);
         }
-        return 0;
+        return 0;*/
 
     case WM_LBUTTONDOWN:
         std::wcout << L"CLIC GAUCHE\n";
@@ -60,16 +87,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 }
 
 
-void AddMenu(HWND hwnd)
-{
-	hMenu = CreateMenu();
+void AddMenu(HWND hwnd)  
+{  
+   hMenu = CreateMenu();  
 
-	AppendMenuW(hMenu, MF_STRING, NULL, L"File");
-	AppendMenuW(hMenu, MF_STRING, NULL, L"Edit");
-	AppendMenuW(hMenu, MF_STRING, NULL, L"Window");
-	AppendMenuW(hMenu, MF_STRING, NULL, L"Help");
+   HMENU hFileMenu = CreateMenu();  
 
-	SetMenu(hwnd, hMenu);
+   AppendMenuW(hFileMenu, MF_STRING, FILE_MENU_NEW, L"New");  
+   AppendMenuW(hFileMenu, MF_STRING, FILE_MENU_OPEN, L"Open");  
+   AppendMenuW(hFileMenu, MF_STRING, FILE_MENU_SAVE, L"Save");
+   AppendMenuW(hFileMenu, MF_SEPARATOR, 0, nullptr);
+   AppendMenuW(hFileMenu, MF_STRING, FILE_MENU_EXIT, L"Exit");
+
+   AppendMenuW(hMenu, MF_POPUP, (UINT_PTR)hFileMenu, L"File");  
+   AppendMenuW(hMenu, MF_STRING, 4, L"Edit");  
+   AppendMenuW(hMenu, MF_STRING, 5, L"Window");  
+   AppendMenuW(hMenu, MF_STRING, 6, L"Help");  
+
+   SetMenu(hwnd, hMenu);  
 }
 
 
