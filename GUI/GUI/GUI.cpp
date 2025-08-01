@@ -157,19 +157,29 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 void AddMenu(HWND hwnd)  
 {  
-   hMenu = CreateMenu();  
+   hMenu = CreateMenu();
+   HMENU hFileMenu = CreateMenu();
+   HMENU hWindowMenu = CreateMenu();
+   HMENU hSubMenu = CreateMenu();
 
-   HMENU hFileMenu = CreateMenu();  
+   // Menu déroulant
+   // Window
+   AppendMenuW(hSubMenu, MF_STRING, 1, L"Submenu Item 1");
 
+   // Menu Fichier
    AppendMenuW(hFileMenu, MF_STRING, FILE_MENU_NEW, L"New");  
    AppendMenuW(hFileMenu, MF_STRING, FILE_MENU_OPEN, L"Open");  
    AppendMenuW(hFileMenu, MF_STRING, FILE_MENU_SAVE, L"Save");
    AppendMenuW(hFileMenu, MF_SEPARATOR, 0, nullptr);
    AppendMenuW(hFileMenu, MF_STRING, FILE_MENU_EXIT, L"Exit");
 
+   // Menu Window
+   AppendMenuW(hWindowMenu, MF_POPUP, (UINT_PTR)hSubMenu, L"Window Item 1");
+
+   // Menu principal
    AppendMenuW(hMenu, MF_POPUP, (UINT_PTR)hFileMenu, L"File");  
-   AppendMenuW(hMenu, MF_STRING, 4, L"Edit");  
-   AppendMenuW(hMenu, MF_STRING, 5, L"Window");  
+   AppendMenuW(hMenu, MF_STRING, 5, L"Edit");  
+   AppendMenuW(hMenu, MF_POPUP, (UINT_PTR)hWindowMenu, L"Window");
    AppendMenuW(hMenu, MF_STRING, 6, L"Help");  
 
    SetMenu(hwnd, hMenu);  
